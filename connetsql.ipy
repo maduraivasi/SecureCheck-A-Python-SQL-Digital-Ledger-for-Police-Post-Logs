@@ -1,0 +1,23 @@
+import pymysql
+
+try:
+    conn = pymysql.connect(
+        host="localhost",
+        user="root",
+        password="Rtx3090ti",   # ← replace with your real password
+        database="mydb"         # ← replace with your DB name
+    )
+    print("✅ Connection successful!")
+
+    # Test a simple query
+    cursor = conn.cursor()
+    cursor.execute("SELECT VERSION()")
+    version = cursor.fetchone()
+    print("MySQL version:", version)
+
+    conn.close()
+
+except pymysql.MySQLError as e:
+    print("❌ Connection failed!")
+    print("Error message:", e)
+
