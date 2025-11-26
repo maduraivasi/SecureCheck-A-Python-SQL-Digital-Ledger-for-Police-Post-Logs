@@ -17,4 +17,4 @@ Police check posts require a centralized system for logging, tracking, and analy
 1. Create DB and user (Postgres or MySQL)
 2. Create table (use SQL in cleanup report)
 3. Run `python load_to_db.py` to upload CSV
-4. Run `streamlit run app.py` and open http://localhost:8501
+4. Run `streamlit run app.py` and open http://localhost:8506
