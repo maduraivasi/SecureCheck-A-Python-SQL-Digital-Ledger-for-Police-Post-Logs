@@ -178,6 +178,97 @@ if 'vehicle_plate' in df.columns:
 else:
     df_display = df
 st.dataframe(df_display, use_container_width=True)
+
+# ============================================================
+# 📊 PREDICTION SUMMARY - Based on query results
+# ============================================================
+if len(df) > 0:
+    st.subheader("🔮 Prediction Summary")
+    
+    col1, col2, col3, col4 = st.columns(4)
+    
+    # Prediction 1: Average age of stopped drivers
+    with col1:
+        if 'driver_age' in df.columns:
+            avg_age = df['driver_age'].replace('Unknown', pd.NA).apply(pd.to_numeric, errors='coerce').mean()
+            if not pd.isna(avg_age):
+                st.metric("Avg Driver Age", f"{avg_age:.1f} years")
+            else:
+                st.metric("Avg Driver Age", "N/A")
+        else:
+            st.metric("Avg Driver Age", "N/A")
+    
+    # Prediction 2: Arrest likelihood
+    with col2:
+        if 'is_arrested' in df.columns:
+            arrest_count = pd.to_numeric(df['is_arrested'], errors='coerce').fillna(0).sum()
+            arrest_rate = (arrest_count / len(df) * 100) if len(df) > 0 else 0
+            st.metric("Arrest Rate", f"{arrest_rate:.1f}%")
+        else:
+            st.metric("Arrest Rate", "N/A")
+    
+    # Prediction 3: Search likelihood
+    with col3:
+        if 'search_conducted' in df.columns:
+            search_count = pd.to_numeric(df['search_conducted'], errors='coerce').fillna(0).sum()
+            search_rate = (search_count / len(df) * 100) if len(df) > 0 else 0
+            st.metric("Search Rate", f"{search_rate:.1f}%")
+        else:
+            st.metric("Search Rate", "N/A")
+    
+    # Prediction 4: Most common violation
+    with col4:
+        if 'violation' in df.columns:
+            top_violation = df['violation'].fillna('Unknown').value_counts().idxmax()
+            st.metric("Top Violation", top_violation[:20])
+        else:
+            st.metric("Top Violation", "N/A")
+    
+    # Additional insights
+    st.write("---")
+    st.subheader("📈 Key Insights from Filtered Data")
+    
+    insights = []
+    
+    # Insight 1: Gender distribution
+    if 'driver_gender' in df.columns:
+        gender_counts = df['driver_gender'].value_counts()
+        if len(gender_counts) > 0:
+            top_gender = gender_counts.idxmax()
+            insights.append(f"👥 Most stopped drivers are **{top_gender}** ({gender_counts[top_gender]} stops)")
+    
+    # Insight 2: Drug-related stops
+    if 'drugs_related_stop' in df.columns:
+        drug_count = pd.to_numeric(df['drugs_related_stop'], errors='coerce').fillna(0).sum()
+        drug_pct = (drug_count / len(df) * 100) if len(df) > 0 else 0
+        insights.append(f"💊 Drug-related stops: **{drug_pct:.1f}%** of filtered results")
+    
+    # Insight 3: Stop duration
+    if 'stop_duration' in df.columns:
+        duration_counts = df['stop_duration'].fillna('Unknown').value_counts()
+        if len(duration_counts) > 0:
+            top_duration = duration_counts.idxmax()
+            insights.append(f"⏱️ Most common stop duration: **{top_duration}**")
+    
+    # Insight 4: Citation vs Arrest
+    if 'stop_outcome' in df.columns:
+        outcome_counts = df['stop_outcome'].fillna('Unknown').value_counts()
+        if len(outcome_counts) > 0:
+            top_outcome = outcome_counts.idxmax()
+            insights.append(f"📋 Most common outcome: **{top_outcome}**")
+    
+    # Insight 5: High-risk profile
+    if 'is_arrested' in df.columns and 'search_conducted' in df.columns:
+        high_risk = df[(pd.to_numeric(df['search_conducted'], errors='coerce').fillna(0) == 1) & 
+                       (pd.to_numeric(df['is_arrested'], errors='coerce').fillna(0) == 1)]
+        if len(high_risk) > 0:
+            insights.append(f"🚨 High-risk stops (searched & arrested): **{len(high_risk)}** ({len(high_risk)/len(df)*100:.1f}%)")
+    
+    if insights:
+        for insight in insights:
+            st.write(f"• {insight}")
+    else:
+        st.info("No insights available for current filters")
 # Quick metrics
 st.subheader("📊 Quick Metrics")
 c1, c2, c3 = st.columns(3)
